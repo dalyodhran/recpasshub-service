@@ -17,6 +17,8 @@
 ---
 # Conditionally disable springdoc on missing api-docs profile
 spring:
+  main:
+    banner-mode: off
   config:
     activate:
       on-profile: '!api-docs'
@@ -95,7 +97,7 @@ spring:
     name: rec-pass-hub-service
   docker:
     compose:
-      enabled: true
+      enabled: false
       lifecycle-management: start-only
       file: src/main/docker/services.yml
   profiles:

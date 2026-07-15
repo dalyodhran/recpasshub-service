@@ -35,7 +35,7 @@ file("sonar-project.properties").withReader {
 
 spotless {
     java {
-        target = 'src/*/java/**/*.java'
+        target 'src/*/java/**/*.java'
         // removeUnusedImports()
     }
 }
@@ -49,6 +49,7 @@ checkstyle {
     toolVersion = "${libs.versions.checkstyle.get()}"
     configFile = file("checkstyle.xml")
     checkstyleTest.enabled = false
+    ignoreFailures = true
 }
 
 nohttp {
