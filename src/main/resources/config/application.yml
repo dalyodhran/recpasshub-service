@@ -209,6 +209,8 @@ jhipster:
       audience:
         - account
         - api://default
+        - rec-pass-organizer
+        - rec-pass-attendee
 
 
 # jhipster-needle-add-application-yaml-document

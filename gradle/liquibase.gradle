@@ -23,9 +23,10 @@ liquibase {
       driver "org.postgresql.Driver"
       url "jdbc:postgresql://localhost:5432/rec-pass-hub-service"
       username "rec-pass-hub-service"
-      changelogFile "src/main/resources/config/liquibase/master.xml"
+      changelogFile "config/liquibase/master.xml"
       logLevel "debug"
       classpath "src/main/resources/"
+      searchPath "$projectDir/src/main/resources"
     }
     diffLog {
       driver "org.postgresql.Driver"
@@ -35,6 +36,7 @@ liquibase {
       referenceUrl "hibernate:spring:com.recpasshub.service.domain?dialect=org.hibernate.dialect.PostgreSQLDialect&hibernate.physical_naming_strategy=org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy&hibernate.implicit_naming_strategy=org.springframework.boot.hibernate.SpringImplicitNamingStrategy"
       logLevel "debug"
       classpath "$buildDir/classes/java/main"
+      searchPath "$projectDir/src/main/resources"
       excludeObjects "oauth_access_token, oauth_approvals, oauth_client_details, oauth_client_token, oauth_code, oauth_refresh_token"
     }
   }

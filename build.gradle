@@ -111,5 +111,7 @@ dependencies {
     annotationProcessor "org.glassfish.jaxb:jaxb-runtime"
     annotationProcessor "org.hibernate.orm:hibernate-processor"
     developmentOnly "org.springframework.boot:spring-boot-docker-compose"
+    compileOnly "org.projectlombok:lombok"
+    annotationProcessor "org.projectlombok:lombok"
     // jhipster-needle-gradle-dependency - JHipster will add additional dependencies here
 }
