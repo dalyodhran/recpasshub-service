@@ -18,7 +18,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping({ "", "/" })
+    @PostMapping({ "/registerUser" })
     public ResponseEntity<UserProfileResponse> syncUser(@AuthenticationPrincipal Jwt jwt) {
         if (jwt == null) {
             throw new org.springframework.web.server.ResponseStatusException(
@@ -49,7 +49,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping({ "", "/" })
+    @GetMapping({ "/me" })
     public ResponseEntity<UserProfileResponse> getUser(@AuthenticationPrincipal Jwt jwt) {
         if (jwt == null) {
             throw new org.springframework.web.server.ResponseStatusException(
