@@ -54,8 +54,8 @@ public class AccountResource {
     /**
      * {@code GET  /authenticate} : check if the user is authenticated.
      *
-     * @return the {@link ResponseEntity} with status {@code 204 (No Content)},
-     * or with status {@code 401 (Unauthorized)} if not authenticated.
+     * @return the {@link ResponseEntity} with state {@code 204 (No Content)},
+     * or with state {@code 401 (Unauthorized)} if not authenticated.
      */
     @GetMapping("/authenticate")
     public ResponseEntity<Void> isAuthenticated(Principal principal) {

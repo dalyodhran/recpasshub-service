@@ -13,7 +13,7 @@ paths: {}
 components:
   responses:
     Problem:
-      description: error occurred - see status code and problem object for more information.
+      description: error occurred - see state code and problem object for more information.
       content:
         application/problem+json:
           schema:

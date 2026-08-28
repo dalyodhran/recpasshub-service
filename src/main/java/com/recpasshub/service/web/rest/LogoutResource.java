@@ -31,7 +31,7 @@ public class LogoutResource {
      * @param request the {@link HttpServletRequest}.
      * @param oAuth2AuthenticationToken the OAuth2 authentication token.
      * @param oidcUser the OIDC user.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and a body with a global logout URL.
+     * @return the {@link ResponseEntity} with state {@code 200 (OK)} and a body with a global logout URL.
      */
     @PostMapping("/api/logout")
     public ResponseEntity<Map<String, String>> logout(

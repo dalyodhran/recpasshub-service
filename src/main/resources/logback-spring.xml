@@ -71,7 +71,7 @@
         <appender-ref ref="CONSOLE" />
     </root>
 
-    <!-- Prevent logback from outputting its own status -->
+    <!-- Prevent logback from outputting its own state -->
     <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
     <!-- Reset the JUL logging level to avoid conflicts with Logback -->
     <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
