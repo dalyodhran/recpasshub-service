@@ -1,6 +1,9 @@
 package com.recpasshub.service.dto;
 
-import com.recpasshub.service.entity.*;
+import com.recpasshub.service.entity.EventState;
+import com.recpasshub.service.entity.EventType;
+import com.recpasshub.service.entity.FAQ;
+import com.recpasshub.service.entity.SportType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
@@ -23,5 +26,6 @@ public record EventRequest(
 
     Integer capacity,
     String description,
-    List<FAQ> frequentlyAskedQuestions
+    List<FAQ> frequentlyAskedQuestions,
+    String mapGuid
 ) {}

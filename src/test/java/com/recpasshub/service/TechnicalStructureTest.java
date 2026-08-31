@@ -17,7 +17,7 @@ class TechnicalStructureTest {
     static final ArchRule respectsTechnicalArchitectureLayers = layeredArchitecture()
         .consideringAllDependencies()
         .layer("Config").definedBy("..config..")
-        .layer("Web").definedBy("..web..")
+        .layer("Web").definedBy("..web..", "..controller..")
         .optionalLayer("Service").definedBy("..service..")
         .layer("Security").definedBy("..security..")
         .optionalLayer("Persistence").definedBy("..repository..")

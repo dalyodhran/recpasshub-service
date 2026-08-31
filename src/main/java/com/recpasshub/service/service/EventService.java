@@ -23,6 +23,7 @@ public class EventService {
 
     /**
      * Gets all events for a specific user.
+     *
      * @return list of events
      */
     @Transactional(readOnly = true)
@@ -32,6 +33,7 @@ public class EventService {
 
     /**
      * Gets a single event by ID and user ID.
+     *
      * @param eventId the event ID
      * @return the event response
      */
@@ -45,6 +47,7 @@ public class EventService {
 
     /**
      * Creates a new event.
+     *
      * @param request the event request details
      * @return the created event response
      */
@@ -63,6 +66,7 @@ public class EventService {
             .frequentlyAskedQuestions(
                 request.frequentlyAskedQuestions() != null ? new ArrayList<>(request.frequentlyAskedQuestions()) : new ArrayList<>()
             )
+            .mapGuid(request.mapGuid())
             .build();
 
         Event savedEvent = eventRepository.save(event);
@@ -71,6 +75,7 @@ public class EventService {
 
     /**
      * Updates an existing event.
+     *
      * @param eventId the event ID
      * @param request the event request details
      * @return the updated event response
@@ -98,12 +103,15 @@ public class EventService {
             event.getFrequentlyAskedQuestions().clear();
         }
 
+        event.setMapGuid(request.mapGuid());
+
         Event updatedEvent = eventRepository.save(event);
         return mapToResponse(updatedEvent);
     }
 
     /**
      * Deletes an event.
+     *
      * @param eventId the event ID
      */
     @Transactional
@@ -132,6 +140,7 @@ public class EventService {
             event.getCapacity(),
             event.getDescription(),
             faqs,
+            event.getMapGuid(),
             event.getCreatedAt(),
             event.getUpdatedAt()
         );

@@ -86,6 +86,8 @@ dependencies {
     implementation "org.postgresql:postgresql"
     implementation "tools.jackson.datatype:jackson-datatype-hibernate7"
     implementation "tools.jackson.module:jackson-module-jaxb-annotations"
+    implementation "software.amazon.awssdk:s3:2.25.11"
+    implementation "io.jenetics:jpx:3.2.1"
     testImplementation(libs.archunit.junit5.api) {
         exclude group: 'org.slf4j', module: 'slf4j-api'
     }

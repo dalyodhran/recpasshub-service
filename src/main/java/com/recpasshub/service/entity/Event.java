@@ -61,6 +61,9 @@ public class Event {
     @CollectionTable(name = "event_faqs", joinColumns = @JoinColumn(name = "event_id"))
     private List<FAQ> frequentlyAskedQuestions = new ArrayList<>();
 
+    @Column(name = "map_guid")
+    private String mapGuid;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
