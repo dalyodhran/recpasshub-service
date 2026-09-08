@@ -21,6 +21,10 @@ logging:
     com.recpasshub.service: DEBUG
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   main:
     banner-mode: off
   devtools:
