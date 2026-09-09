@@ -19,6 +19,7 @@ public record EventResponse(
     Instant endDateTime,
     Integer capacity,
     String description,
+    MapsResponse map,
     List<FAQ> frequentlyAskedQuestions,
     String mapGuid,
     Instant createdAt,

@@ -64,6 +64,10 @@ public class Event {
     @Column(name = "map_guid")
     private String mapGuid;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "map_guid", referencedColumnName = "map_guid", insertable = false, updatable = false)
+    private Maps map;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;

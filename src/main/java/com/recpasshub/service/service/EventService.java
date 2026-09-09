@@ -2,6 +2,7 @@ package com.recpasshub.service.service;
 
 import com.recpasshub.service.dto.EventRequest;
 import com.recpasshub.service.dto.EventResponse;
+import com.recpasshub.service.dto.MapsResponse;
 import com.recpasshub.service.entity.Event;
 import com.recpasshub.service.entity.EventState;
 import com.recpasshub.service.entity.FAQ;
@@ -128,6 +129,19 @@ public class EventService {
         List<FAQ> faqs =
             event.getFrequentlyAskedQuestions() != null ? new ArrayList<>(event.getFrequentlyAskedQuestions()) : new ArrayList<>();
 
+        MapsResponse mapsResponse = null;
+        if (event.getMap() != null) {
+            mapsResponse = new MapsResponse(
+                event.getMap().getMapGuid(),
+                event.getMap().getS3FileLocation(),
+                event.getMap().getDistance(),
+                event.getMap().getElevation(),
+                event.getMap().getLocation(),
+                event.getMap().getCreatedAt(),
+                event.getMap().getUpdatedAt()
+            );
+        }
+
         return new EventResponse(
             event.getEventGuid(),
             event.getOrganizationGuid(),
@@ -139,6 +153,7 @@ public class EventService {
             event.getEndDateTime(),
             event.getCapacity(),
             event.getDescription(),
+            mapsResponse,
             faqs,
             event.getMapGuid(),
             event.getCreatedAt(),
