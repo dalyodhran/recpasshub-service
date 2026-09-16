@@ -8,13 +8,14 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/v1/organizers/events")
+@RequestMapping("/api/v1/events")
 @RequiredArgsConstructor
 public class EventController {
 
@@ -60,6 +61,7 @@ public class EventController {
      * @return the created event
      */
     @PostMapping
+    @PreAuthorize("hasAuthority('ROLE_ORGANIZER')")
     public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventRequest request, @AuthenticationPrincipal Jwt jwt) {
         verifyAccess(jwt);
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createEvent(request));
@@ -73,6 +75,7 @@ public class EventController {
      * @return the updated event
      */
     @PutMapping("/{eventId}")
+    @PreAuthorize("hasAuthority('ROLE_ORGANIZER')")
     public ResponseEntity<EventResponse> updateEvent(
         @PathVariable String eventId,
         @Valid @RequestBody EventRequest request,
@@ -89,6 +92,7 @@ public class EventController {
      * @return no content
      */
     @DeleteMapping("/{eventId}")
+    @PreAuthorize("hasAuthority('ROLE_ORGANIZER')")
     public ResponseEntity<Void> deleteEvent(@PathVariable String eventId, @AuthenticationPrincipal Jwt jwt) {
         verifyAccess(jwt);
         eventService.deleteEvent(eventId);

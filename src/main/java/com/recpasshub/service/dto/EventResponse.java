@@ -22,6 +22,8 @@ public record EventResponse(
     MapsResponse map,
     List<FAQ> frequentlyAskedQuestions,
     String mapGuid,
+    WaiverResponse waiver,
+    String waiverGuid,
     Instant createdAt,
     Instant updatedAt
 ) implements Serializable {}

@@ -27,5 +27,6 @@ public record EventRequest(
     Integer capacity,
     String description,
     List<FAQ> frequentlyAskedQuestions,
-    String mapGuid
+    String mapGuid,
+    String waiverGuid
 ) {}

@@ -114,16 +114,34 @@ public final class SecurityUtils {
 
     @SuppressWarnings("unchecked")
     private static Collection<String> getRolesFromClaims(Map<String, Object> claims) {
-        return (Collection<String>) claims.getOrDefault(
-            "groups",
-            claims.getOrDefault("roles", claims.getOrDefault(CLAIMS_NAMESPACE + "roles", new ArrayList<>()))
-        );
+        Collection<String> roles = new ArrayList<>();
+
+        // Check standard claims
+        if (claims.containsKey("groups")) {
+            roles.addAll((Collection<String>) claims.get("groups"));
+        }
+        if (claims.containsKey("roles")) {
+            roles.addAll((Collection<String>) claims.get("roles"));
+        }
+        if (claims.containsKey(CLAIMS_NAMESPACE + "roles")) {
+            roles.addAll((Collection<String>) claims.get(CLAIMS_NAMESPACE + "roles"));
+        }
+
+        // Check Keycloak's realm_access.roles
+        if (claims.containsKey("realm_access")) {
+            Map<String, Object> realmAccess = (Map<String, Object>) claims.get("realm_access");
+            if (realmAccess.containsKey("roles")) {
+                roles.addAll((Collection<String>) realmAccess.get("roles"));
+            }
+        }
+
+        return roles;
     }
 
     private static List<GrantedAuthority> mapRolesToGrantedAuthorities(Collection<String> roles) {
         return roles
             .stream()
-            .filter(role -> role.startsWith("ROLE_"))
+            .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
             .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
     }
