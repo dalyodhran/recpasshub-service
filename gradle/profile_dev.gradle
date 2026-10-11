@@ -28,6 +28,8 @@ processResources {
 }
 
 task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
     maxHeapSize = "1G"
     useJUnitPlatform()
     description = "Execute integration tests."
