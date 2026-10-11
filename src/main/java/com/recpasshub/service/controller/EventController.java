@@ -19,6 +19,9 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class EventController {
 
+    private static final String DEFAULT_RADIUS_KM = "40.0";
+    private static final double MAX_RADIUS_KM = 200.0;
+
     private final EventService eventService;
 
     private void verifyAccess(Jwt jwt) {
@@ -43,14 +46,49 @@ public class EventController {
     }
 
     /**
+     * Finds PUBLISHED events within a radius of a given coordinate.
+     * @param latitude the search origin latitude, required, -90 to 90
+     * @param longitude the search origin longitude, required, -180 to 180
+     * @param radius the search radius in kilometers, optional, defaults to {@value #DEFAULT_RADIUS_KM}, max {@value #MAX_RADIUS_KM}
+     * @return list of matching events
+     */
+    @GetMapping("/nearby")
+    public ResponseEntity<List<EventResponse>> getNearbyEvents(
+        @RequestParam double latitude,
+        @RequestParam double longitude,
+        @RequestParam(defaultValue = DEFAULT_RADIUS_KM) double radius
+    ) {
+        validateLatitude(latitude);
+        validateLongitude(longitude);
+        validateRadius(radius);
+        return ResponseEntity.ok(eventService.getNearbyPublishedEvents(latitude, longitude, radius));
+    }
+
+    private void validateLatitude(double latitude) {
+        if (latitude < -90.0 || latitude > 90.0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "latitude must be between -90 and 90");
+        }
+    }
+
+    private void validateLongitude(double longitude) {
+        if (longitude < -180.0 || longitude > 180.0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "longitude must be between -180 and 180");
+        }
+    }
+
+    private void validateRadius(double radius) {
+        if (radius <= 0 || radius > MAX_RADIUS_KM) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "radius must be greater than 0 and at most " + MAX_RADIUS_KM + " km");
+        }
+    }
+
+    /**
      * Gets a specific event for a user.
      * @param eventId the event ID
-     * @param jwt the JWT token
      * @return the event
      */
     @GetMapping("/{eventId}")
-    public ResponseEntity<EventResponse> getEvent(@PathVariable String eventId, @AuthenticationPrincipal Jwt jwt) {
-        verifyAccess(jwt);
+    public ResponseEntity<EventResponse> getEvent(@PathVariable String eventId) {
         return ResponseEntity.ok(eventService.getEvent(eventId));
     }
 
