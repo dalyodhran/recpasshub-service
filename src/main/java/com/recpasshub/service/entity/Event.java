@@ -61,6 +61,10 @@ public class Event {
     @CollectionTable(name = "event_faqs", joinColumns = @JoinColumn(name = "event_id"))
     private List<FAQ> frequentlyAskedQuestions = new ArrayList<>();
 
+    private Double latitude;
+
+    private Double longitude;
+
     @Column(name = "map_guid")
     private String mapGuid;
 

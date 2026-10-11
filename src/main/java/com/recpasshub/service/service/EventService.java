@@ -21,6 +21,11 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class EventService {
 
+    /** Shortest a degree of latitude/longitude ever gets, so the bounding box never clips the circle. */
+    private static final double MIN_KM_PER_DEGREE = 110.574;
+
+    private static final double MIN_COS_LATITUDE = 1e-6;
+
     private final EventRepository eventRepository;
 
     /**
@@ -70,6 +75,8 @@ public class EventService {
             )
             .mapGuid(request.mapGuid())
             .waiverGuid(request.waiverGuid())
+            .latitude(request.latitude())
+            .longitude(request.longitude())
             .build();
 
         Event savedEvent = eventRepository.save(event);
@@ -108,6 +115,8 @@ public class EventService {
 
         event.setMapGuid(request.mapGuid());
         event.setWaiverGuid(request.waiverGuid());
+        event.setLatitude(request.latitude());
+        event.setLongitude(request.longitude());
 
         Event updatedEvent = eventRepository.save(event);
         return mapToResponse(updatedEvent);
@@ -171,8 +180,43 @@ public class EventService {
             event.getMapGuid(),
             waiverResponse,
             event.getWaiverGuid(),
+            event.getLatitude(),
+            event.getLongitude(),
             event.getCreatedAt(),
             event.getUpdatedAt()
         );
+    }
+
+    /**
+     * Finds published events within a radius (in kilometers) of a given coordinate.
+     *
+     * @param latitude the search origin latitude
+     * @param longitude the search origin longitude
+     * @param radiusKm the search radius in kilometers
+     * @return list of matching event responses
+     */
+    @Transactional(readOnly = true)
+    public List<EventResponse> getNearbyPublishedEvents(double latitude, double longitude, double radiusKm) {
+        double latDeltaDegrees = radiusKm / MIN_KM_PER_DEGREE;
+        double minLatitude = Math.max(latitude - latDeltaDegrees, -90.0);
+        double maxLatitude = Math.min(latitude + latDeltaDegrees, 90.0);
+
+        // A degree of longitude shrinks towards the poles, so the circle's widest longitude
+        // span sits at whichever edge of the latitude band is furthest from the equator.
+        double widestLatitude = Math.max(Math.abs(minLatitude), Math.abs(maxLatitude));
+        double cosLatitude = Math.cos(Math.toRadians(widestLatitude));
+        double lonDeltaDegrees = cosLatitude < MIN_COS_LATITUDE ? 180.0 : radiusKm / (MIN_KM_PER_DEGREE * cosLatitude);
+
+        // Near the antimeridian the box would wrap, which a simple BETWEEN cannot express.
+        // Fall back to the full longitude range and let the Haversine filter do the work.
+        boolean wrapsAntimeridian = longitude - lonDeltaDegrees < -180.0 || longitude + lonDeltaDegrees > 180.0;
+        double minLongitude = wrapsAntimeridian ? -180.0 : longitude - lonDeltaDegrees;
+        double maxLongitude = wrapsAntimeridian ? 180.0 : longitude + lonDeltaDegrees;
+
+        return eventRepository
+            .findNearbyPublishedEvents(latitude, longitude, minLatitude, maxLatitude, minLongitude, maxLongitude, radiusKm)
+            .stream()
+            .map(this::mapToResponse)
+            .collect(Collectors.toList());
     }
 }

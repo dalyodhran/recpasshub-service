@@ -28,5 +28,7 @@ public record EventRequest(
     String description,
     List<FAQ> frequentlyAskedQuestions,
     String mapGuid,
-    String waiverGuid
+    String waiverGuid,
+    Double latitude,
+    Double longitude
 ) {}
