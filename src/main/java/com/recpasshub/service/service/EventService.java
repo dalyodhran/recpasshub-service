@@ -8,6 +8,8 @@ import com.recpasshub.service.dto.WaiverResponse;
 import com.recpasshub.service.entity.Event;
 import com.recpasshub.service.entity.EventState;
 import com.recpasshub.service.entity.FAQ;
+import com.recpasshub.service.entity.SportType;
+import com.recpasshub.service.entity.TerrainType;
 import com.recpasshub.service.repository.EventRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,10 +67,12 @@ public class EventService {
      */
     @Transactional
     public EventResponse createEvent(EventRequest request) {
+        validateTerrain(request.sportType(), request.terrainType());
         Event event = Event.builder()
             .organizationGuid(request.organizationGuid())
             .eventName(request.eventName())
             .sportType(request.sportType())
+            .terrainType(request.terrainType())
             .eventType(request.eventType())
             .state(request.state() != null ? request.state() : EventState.DRAFT)
             .startDateTime(request.startDateTime())
@@ -101,9 +105,11 @@ public class EventService {
             .findByEventGuid(eventId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
 
+        validateTerrain(request.sportType(), request.terrainType());
         event.setOrganizationGuid(request.organizationGuid());
         event.setEventName(request.eventName());
         event.setSportType(request.sportType());
+        event.setTerrainType(request.terrainType());
         event.setEventType(request.eventType());
         event.setState(request.state() != null ? request.state() : EventState.DRAFT);
         event.setStartDateTime(request.startDateTime());
@@ -139,6 +145,15 @@ public class EventService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Event not found"));
 
         eventRepository.delete(event);
+    }
+
+    private static void validateTerrain(SportType sportType, TerrainType terrainType) {
+        if (!TerrainType.isValidFor(sportType, terrainType)) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "terrainType " + terrainType + " is not valid for sportType " + sportType + "; allowed: " + TerrainType.forSport(sportType)
+            );
+        }
     }
 
     private EventResponse mapToResponse(Event event) {
@@ -184,6 +199,7 @@ public class EventService {
             event.getOrganizationGuid(),
             event.getEventName(),
             event.getSportType(),
+            event.getTerrainType(),
             event.getEventType(),
             event.getState(),
             event.getStartDateTime(),

@@ -1,9 +1,6 @@
 package com.recpasshub.service.dto;
 
-import com.recpasshub.service.entity.EventState;
-import com.recpasshub.service.entity.EventType;
-import com.recpasshub.service.entity.FAQ;
-import com.recpasshub.service.entity.SportType;
+import com.recpasshub.service.entity.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
@@ -16,6 +13,8 @@ public record EventRequest(
     @NotBlank String eventName,
 
     @NotNull SportType sportType,
+
+    TerrainType terrainType,
 
     @NotNull EventType eventType,
 
@@ -30,5 +29,5 @@ public record EventRequest(
     String mapGuid,
     String waiverGuid,
     String logoGuid,
-    List<String> tags
+    List<Tag> tags
 ) {}

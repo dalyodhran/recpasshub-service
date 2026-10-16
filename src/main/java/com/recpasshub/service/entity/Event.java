@@ -37,6 +37,10 @@ public class Event {
     private SportType sportType;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "terrain_type")
+    private TerrainType terrainType;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "event_type", nullable = false)
     private EventType eventType;
 

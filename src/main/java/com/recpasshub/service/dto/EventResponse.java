@@ -4,6 +4,7 @@ import com.recpasshub.service.entity.EventState;
 import com.recpasshub.service.entity.EventType;
 import com.recpasshub.service.entity.FAQ;
 import com.recpasshub.service.entity.SportType;
+import com.recpasshub.service.entity.TerrainType;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
@@ -13,6 +14,7 @@ public record EventResponse(
     String organizationGuid,
     String eventName,
     SportType sportType,
+    TerrainType terrainType,
     EventType eventType,
     EventState state,
     Instant startDateTime,

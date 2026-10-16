@@ -19,6 +19,7 @@
     <include file="/config/liquibase/changelog/20261013100000_add_map_coordinates.xml" relativeToChangelogFile="false"/>
     <include file="/config/liquibase/changelog/20261015100000_add_logos.xml" relativeToChangelogFile="false"/>
     <include file="/config/liquibase/changelog/20261015120000_add_tags.xml" relativeToChangelogFile="false"/>
+    <include file="/config/liquibase/changelog/20261015130000_add_event_terrain_type.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->

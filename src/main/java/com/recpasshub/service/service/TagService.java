@@ -20,17 +20,17 @@ public class TagService {
      * @param event the event to tag
      * @param names the tag names chosen by the organizer
      */
-    public void replaceTags(Event event, List<String> names) {
+    public void replaceTags(Event event, List<Tag> names) {
         if (names == null) {
             return;
         }
         event.getTags().clear();
         Set<String> seen = new HashSet<>();
-        for (String raw : names) {
+        for (Tag raw : names) {
             if (raw == null) {
                 continue;
             }
-            String name = raw.trim();
+            String name = raw.getName().trim();
             if (name.isEmpty() || !seen.add(name.toLowerCase())) {
                 continue;
             }
