@@ -31,6 +31,8 @@ public class EventService {
 
     private final EventRepository eventRepository;
 
+    private final TagService tagService;
+
     /**
      * Gets all events for a specific user.
      *
@@ -80,6 +82,7 @@ public class EventService {
             .waiverGuid(request.waiverGuid())
             .logoGuid(request.logoGuid())
             .build();
+        tagService.replaceTags(event, request.tags());
 
         Event savedEvent = eventRepository.save(event);
         return mapToResponse(savedEvent);
@@ -118,6 +121,7 @@ public class EventService {
         event.setMapGuid(request.mapGuid());
         event.setWaiverGuid(request.waiverGuid());
         event.setLogoGuid(request.logoGuid());
+        tagService.replaceTags(event, request.tags());
 
         Event updatedEvent = eventRepository.save(event);
         return mapToResponse(updatedEvent);
@@ -193,6 +197,7 @@ public class EventService {
             event.getWaiverGuid(),
             logoResponse,
             event.getLogoGuid(),
+            tagService.toResponses(event),
             event.getCreatedAt(),
             event.getUpdatedAt()
         );

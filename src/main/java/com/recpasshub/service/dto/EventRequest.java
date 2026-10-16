@@ -29,5 +29,6 @@ public record EventRequest(
     List<FAQ> frequentlyAskedQuestions,
     String mapGuid,
     String waiverGuid,
-    String logoGuid
+    String logoGuid,
+    List<String> tags
 ) {}

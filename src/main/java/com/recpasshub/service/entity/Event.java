@@ -82,6 +82,10 @@ public class Event {
     @JoinColumn(name = "logo_guid", referencedColumnName = "logo_guid", insertable = false, updatable = false)
     private Logo logo;
 
+    @Builder.Default
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tag> tags = new ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;

@@ -26,6 +26,7 @@ public record EventResponse(
     String waiverGuid,
     LogoResponse logo,
     String logoGuid,
+    List<TagResponse> tags,
     Instant createdAt,
     Instant updatedAt
 ) implements Serializable {}
