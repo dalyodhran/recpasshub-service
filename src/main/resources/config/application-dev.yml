@@ -105,3 +105,4 @@ aws:
     endpoint: http://localhost:4566
     bucket-name: recpasshub-map-local
     waiver-bucket-name: recpasshub-wavier-local
+    logo-bucket-name: recpasshub-logo-local

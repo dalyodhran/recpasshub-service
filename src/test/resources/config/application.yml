@@ -55,6 +55,7 @@ aws:
   s3:
     bucket-name: recpasshub-map-test
     waiver-bucket-name: recpasshub-waiver-test
+    logo-bucket-name: recpasshub-logo-test
 
 server:
   port: 10344

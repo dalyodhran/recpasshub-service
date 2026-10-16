@@ -2,6 +2,7 @@ package com.recpasshub.service.service;
 
 import com.recpasshub.service.dto.EventRequest;
 import com.recpasshub.service.dto.EventResponse;
+import com.recpasshub.service.dto.LogoResponse;
 import com.recpasshub.service.dto.MapsResponse;
 import com.recpasshub.service.dto.WaiverResponse;
 import com.recpasshub.service.entity.Event;
@@ -77,6 +78,7 @@ public class EventService {
             )
             .mapGuid(request.mapGuid())
             .waiverGuid(request.waiverGuid())
+            .logoGuid(request.logoGuid())
             .build();
 
         Event savedEvent = eventRepository.save(event);
@@ -115,6 +117,7 @@ public class EventService {
 
         event.setMapGuid(request.mapGuid());
         event.setWaiverGuid(request.waiverGuid());
+        event.setLogoGuid(request.logoGuid());
 
         Event updatedEvent = eventRepository.save(event);
         return mapToResponse(updatedEvent);
@@ -162,6 +165,16 @@ public class EventService {
             );
         }
 
+        LogoResponse logoResponse = null;
+        if (event.getLogo() != null) {
+            logoResponse = new LogoResponse(
+                event.getLogo().getLogoGuid(),
+                event.getLogo().getS3FileLocation(),
+                event.getLogo().getCreatedAt(),
+                event.getLogo().getUpdatedAt()
+            );
+        }
+
         return new EventResponse(
             event.getEventGuid(),
             event.getOrganizationGuid(),
@@ -178,6 +191,8 @@ public class EventService {
             event.getMapGuid(),
             waiverResponse,
             event.getWaiverGuid(),
+            logoResponse,
+            event.getLogoGuid(),
             event.getCreatedAt(),
             event.getUpdatedAt()
         );

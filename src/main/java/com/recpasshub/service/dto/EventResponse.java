@@ -24,6 +24,8 @@ public record EventResponse(
     String mapGuid,
     WaiverResponse waiver,
     String waiverGuid,
+    LogoResponse logo,
+    String logoGuid,
     Instant createdAt,
     Instant updatedAt
 ) implements Serializable {}
