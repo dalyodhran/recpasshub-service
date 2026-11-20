@@ -1,310 +1,95 @@
-# rec-pass-hub-service
+# Rec Pass Hub Service
 
-This application was generated using JHipster 9.0.0, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v9.0.0](https://www.jhipster.tech/documentation-archive/v9.0.0).
+The backend API for **Rec Pass Hub**, a platform where people discover local running, cycling, swimming and triathlon events, sign waivers, and carry their event pass on their phone. Organizers use the same API to publish events, upload course maps and manage check-in.
 
-## Project Structure
+![Java 21](https://img.shields.io/badge/Java-21-orange) ![Spring Boot 4](https://img.shields.io/badge/Spring%20Boot-4-6DB33F) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791) ![Keycloak](https://img.shields.io/badge/Auth-Keycloak%20OAuth2-4D4D4D) ![Redis](https://img.shields.io/badge/Cache-Redis-DC382D)
 
-Node is required for generation and recommended for development. `package.json` is always generated for a better development experience with prettier, commit hooks, scripts and so on.
+![Rec Pass Hub app screens: explore feed, event detail, waiver signing and race-day pass](docs/images/app-screens.png)
 
-In the project root, JHipster generates configuration files for tools like git, prettier, eslint, husky, and others that are well known and you can find references in the web.
+*Hi-fi designs for the [mobile app](https://github.com/dalyodhran/recpasshub-app) these endpoints power: explore nearby events, view event details, sign the waiver at checkout, and show a QR pass on race day.*
 
-`/src/*` structure follows default Java structure.
+## Architecture
 
-- `.yo-rc.json` - Yeoman configuration file
-  JHipster configuration is stored in this file at `generator-jhipster` key. You may find `generator-jhipster-*` for specific blueprints configuration.
-- `.yo-resolve` (optional) - Yeoman conflict resolver
-  Allows to use a specific action when conflicts are found skipping prompts for files that matches a pattern. Each line should match `[pattern] [action]` with pattern been a [Minimatch](https://github.com/isaacs/minimatch#minimatch) pattern and action been one of skip (default if omitted) or force. Lines starting with `#` are considered comments and are ignored.
-- `.jhipster/*.json` - JHipster entity configuration files
-- `/src/main/docker` - Docker configurations for the application and services that the application depends on
+```mermaid
+flowchart LR
+    app["Mobile app<br/>React Native · Expo"] -->|REST + JWT| api
+    web["Organizer dashboard<br/>React · TypeScript"] -->|REST + JWT| api
+    app -->|OAuth2 / OIDC login| kc["Keycloak"]
+    web -->|OAuth2 / OIDC login| kc
+    api["Rec Pass Hub Service<br/>Spring Boot 4 · Java 21"] -->|validates tokens| kc
+    api --> pg[("PostgreSQL<br/>Liquibase migrations")]
+    api --> redis[("Redis<br/>cache · Redisson")]
+    api --> s3[("S3 object storage<br/>course maps · waivers · logos")]
+```
 
-## Development
+- **Authentication** is delegated to Keycloak. The service is an OAuth2 resource server: it validates JWTs, checks the token audience, and maps Keycloak roles and claims to Spring Security authorities.
+- **PostgreSQL** holds users, events, waivers, maps, logos and tags. The schema is versioned with Liquibase changelogs in `src/main/resources/config/liquibase`.
+- **Redis** (through Redisson) backs Spring's cache layer.
+- **S3-compatible storage** holds uploaded files. Locally it points at LocalStack on port 4566; in production it uses AWS S3.
 
-To start your application in the dev profile, run:
+## Features
+
+- **Events:** create, update, publish (`DRAFT` → `PUBLISHED`) and delete events with sport type, terrain, capacity, start and end times, tags, and a linked course map, waiver and logo.
+- **Nearby search:** find events within a radius of a latitude and longitude (`GET /api/v1/events/nearby`), with input validation on coordinates.
+- **Course maps:** organizers upload a GPX file. The service parses it with [JPX](https://github.com/jenetics/jpx) to work out distance, elevation gain and start location, and stores the file in S3.
+- **Waivers:** upload and serve event waivers, so attendees can sign one during checkout.
+- **Users:** registration and profile endpoints linked to the Keycloak identity.
+- **Organizer branding:** logo upload and retrieval.
+
+## API
+
+All endpoints sit under `/api/v1` and need a Keycloak bearer token. OpenAPI docs are served at `/v3/api-docs` and through Swagger UI in the dev profile.
+
+| Resource | Endpoints |
+|---|---|
+| Events | `GET /events`, `GET /events/nearby?latitude=&longitude=&radius=`, `GET /events/{id}`, `POST /events`, `PUT /events/{id}`, `DELETE /events/{id}` |
+| Maps | `POST /maps` (multipart GPX upload), `GET /maps/{guid}` |
+| Waivers | `POST /waivers` (multipart upload), `GET /waivers/{guid}` |
+| Logos | `POST /logos` (multipart upload), `GET /logos/{guid}` |
+| Users | `POST /users/registerUser`, `GET /users/me` |
+
+## Tech stack
+
+| Area | Tools |
+|---|---|
+| Language and framework | Java 21, Spring Boot 4, Spring Security (OAuth2 resource server), Spring Data JPA / Hibernate |
+| Data | PostgreSQL, Liquibase, Redis (Redisson) |
+| Storage | AWS SDK v2 for S3, LocalStack for local development |
+| Auth | Keycloak (OAuth2 / OpenID Connect) |
+| Quality | JUnit 5, Testcontainers, Checkstyle, Prettier, Husky pre-commit hooks, SonarQube |
+| Build and CI | Gradle, GitHub Actions (build and test on every push), Jib for container images |
+
+The project was bootstrapped with [JHipster](https://www.jhipster.tech/), and the domain model, API and services on top of it are my own.
+
+## Running locally
+
+**Prerequisites:** Java 21, Docker, and the compose files from [recchubpass-docker](https://github.com/dalyodhran/recchubpass-docker).
+
+1. Start PostgreSQL, Keycloak and Redis:
+   ```bash
+   docker compose -f services.yml up -d
+   ```
+   Keycloak runs on http://localhost:9080 with a preconfigured realm.
+2. For file uploads, start LocalStack S3 on port 4566 and create the buckets named in `application-dev.yml`.
+3. Run the service with the dev profile:
+   ```bash
+   ./gradlew
+   ```
+   The API is available on http://localhost:8080.
+
+### Tests
 
 ```bash
-./gradlew
+./gradlew test             # unit tests
+./gradlew integrationTest  # integration tests (uses Testcontainers)
 ```
 
-For further instructions on how to develop with JHipster, have a look at [Using JHipster in development][].
+## Related repositories
 
-### OAuth 2.0 / OpenID Connect
+- [recpasshub-app](https://github.com/dalyodhran/recpasshub-app): React Native mobile app for attendees and organizers
+- [recpasshub-ui](https://github.com/dalyodhran/recpasshub-ui): organizer web dashboard
+- [recchubpass-docker](https://github.com/dalyodhran/recchubpass-docker): Docker Compose stack for local development and monitoring (Prometheus and Grafana)
 
-Congratulations! You've selected an excellent way to secure your JHipster application. If you're not sure what OAuth and OpenID Connect (OIDC) are, please see [What the Heck is OAuth?](https://developer.okta.com/blog/2017/06/21/what-the-heck-is-oauth)
+## Author
 
-To log in to your app, you'll need to have [Keycloak](https://keycloak.org) up and running. The JHipster Team has created a Docker container for you that has the default users and roles. Start Keycloak using the following command.
-
-```bash
-docker compose -f src/main/docker/keycloak.yml up
-```
-
-The security settings in `src/main/resources/config/application.yml` are configured for this image.
-
-```yaml
-spring:
-  ...
-  security:
-    oauth2:
-      client:
-        provider:
-          oidc:
-            issuer-uri: http://localhost:9080/realms/jhipster
-        registration:
-          oidc:
-            client-id: web_app
-            client-secret: web_app
-            scope: openid,profile,email
-```
-
-Some of Keycloak configuration is now done in build time and the other part before running the app, here is the [list](https://www.keycloak.org/server/all-config) of all build and configuration options.
-
-Before moving to production, please make sure to follow this [guide](https://www.keycloak.org/server/configuration) for better security and performance.
-
-Also, you should never use `start-dev` nor `KC_DB=dev-file` in production.
-
-When using Kubernetes, importing should be done using init-containers (with a volume when using `db=dev-file`).
-
-### Okta
-
-If you'd like to use Okta instead of Keycloak, it's pretty quick.
-
-First, you'll need to create a free developer account at <https://developer.okta.com/signup/>. After doing so, you'll get your own Okta domain, that has a name like `https://dev-123456.okta.com`.
-
-Modify `src/main/resources/config/application.yml` to use your Okta settings.
-
-```yaml
-spring:
-  ...
-  security:
-    oauth2:
-      client:
-        provider:
-          oidc:
-            issuer-uri: https://{yourOktaDomain}/oauth2/default
-        registration:
-          oidc:
-            client-id: {clientId}
-            client-secret: {clientSecret}
-security:
-```
-
-Create an OIDC App in Okta to get a `{clientId}` and `{clientSecret}`. To do this, log in to your Okta Developer account and navigate to **Applications** > **Add Application**. Click **Web** and click the **Next** button. Give the app a name you’ll remember, specify `http://localhost:8080` as a Base URI, and `http://localhost:8080/login/oauth2/code/oidc` as a Login Redirect URI. Click **Done**, then Edit and add `http://localhost:8080` as a Logout redirect URI. Copy and paste the client ID and secret into your `application.yml` file.
-
-Create a `ROLE_ADMIN` and `ROLE_USER` group and add users into them. Modify e2e tests to use this account when running integration tests.
-
-Navigate to **API** > **Authorization Servers**, click the **Authorization Servers** tab and edit the default one. Click the **Claims** tab and **Add Claim**. Name it "groups", and include it in the ID Token. Set the value type to "Groups" and set the filter to be a Regex of `.*`.
-
-After making these changes, you should be good to go! If you have any issues, please post them to [Stack Overflow](https://stackoverflow.com/questions/tagged/jhipster). Make sure to tag your question with "jhipster" and "okta".
-
-### Auth0
-
-If you'd like to use [Auth0](https://auth0.com/) instead of Keycloak, follow the configuration steps below:
-
-- Create a free developer account at [Sign Up - Auth0](https://auth0.com/signup). After successful sign-up, your account will be associated with a unique domain like `dev-xxx.us.auth0.com`
-- Create a new application of type `Regular Web Applications`. Switch to the `Settings` tab, and configure your application settings like:
-  - Allowed Callback URLs: `http://localhost:8080/login/oauth2/code/oidc`
-  - Allowed Logout URLs: `http://localhost:8080/`
-- Navigate to **User Management** > **Roles** and create new roles named `ROLE_ADMIN`, and `ROLE_USER`.
-- Navigate to **User Management** > **Users** and create a new user account. Click on the **Role** tab to assign roles to the newly created user account.
-- Navigate to **Auth Pipeline** > **Rules** and create a new Rule. Choose `Empty rule` template. Provide a meaningful name like `JHipster claims` and replace `Script` content with the following and Save.
-
-```javascript
-function (user, context, callback) {
-  user.preferred_username = user.email;
-  const roles = (context.authorization || {}).roles;
-
-  function prepareCustomClaimKey(claim) {
-    return `https://www.jhipster.tech/${claim}`;
-  }
-
-  const rolesClaim = prepareCustomClaimKey('roles');
-
-  if (context.idToken) {
-    context.idToken[rolesClaim] = roles;
-  }
-
-  if (context.accessToken) {
-    context.accessToken[rolesClaim] = roles;
-  }
-
-  callback(null, user, context);
-}
-```
-
-- In your `JHipster` application, modify `src/main/resources/config/application.yml` to use your Auth0 application settings:
-
-```yaml
-spring:
-  ...
-  security:
-    oauth2:
-      client:
-        provider:
-          oidc:
-            # make sure to include the ending slash!
-            issuer-uri: https://{your-auth0-domain}/
-        registration:
-          oidc:
-            client-id: {clientId}
-            client-secret: {clientSecret}
-            scope: openid,profile,email
-jhipster:
-  ...
-  security:
-    oauth2:
-      audience:
-        - https://{your-auth0-domain}/api/v2/
-```
-
-### Doing API-First development using openapi-generator-cli
-
-[OpenAPI-Generator](https://openapi-generator.tech) is configured for this application. You can generate API code from the `src/main/resources/swagger/api.yml` definition file by running:
-
-```bash
-./gradlew openApiGenerate
-```
-
-Then implements the generated delegate classes with `@Service` classes.
-
-To edit the `api.yml` definition file, you can use a tool such as [Swagger-Editor](). Start a local instance of the swagger-editor using docker by running: `docker compose -f src/main/docker/swagger-editor.yml up -d`. The editor will then be reachable at [http://localhost:7742](http://localhost:7742).
-
-Refer to [Doing API-First development](https://www.jhipster.tech/documentation-archive/v9.0.0/doing-api-first-development/) for more details.
-
-## Building for production
-
-### Packaging as jar
-
-To build the final jar and optimize the rec-pass-hub-service application for production, run:
-
-```bash
-./gradlew -Pprod clean bootJar
-```
-
-To ensure everything worked, run:
-
-```bash
-java -jar build/libs/*.jar
-```
-
-Refer to [Using JHipster in production][] for more details.
-
-### Packaging as war
-
-To package your application as a war in order to deploy it to an application server, run:
-
-```bash
-./gradlew -Pprod -Pwar clean bootWar
-```
-
-### JHipster Control Center
-
-JHipster Control Center can help you manage and control your application(s). You can start a local control center server (accessible on http://localhost:7419) with:
-
-```bash
-docker compose -f src/main/docker/jhipster-control-center.yml up
-```
-
-## Testing
-
-### Spring Boot tests
-
-To launch your application's tests, run:
-
-```bash
-./gradlew test integrationTest jacocoTestReport
-```
-
-## Others
-
-### Code quality using Sonar
-
-Sonar is used to analyse code quality. You can start a local Sonar server (accessible on http://localhost:9001) with:
-
-```bash
-docker compose -f src/main/docker/sonar.yml up -d
-```
-
-Note: we have turned off forced authentication redirect for UI in [src/main/docker/sonar.yml](src/main/docker/sonar.yml) for out of the box experience while trying out SonarQube, for real use cases turn it back on.
-
-You can run a Sonar analysis with using the [sonar-scanner](https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner) or by using the gradle plugin.
-
-Then, run a Sonar analysis:
-
-```bash
-./gradlew -Pprod clean check jacocoTestReport sonarqube -Dsonar.login=admin -Dsonar.password=admin
-```
-
-Additionally, Instead of passing `sonar.password` and `sonar.login` as CLI arguments, these parameters can be configured from [sonar-project.properties](sonar-project.properties) as shown below:
-
-```bash
-sonar.login=admin
-sonar.password=admin
-```
-
-For more information, refer to the [Code quality page][].
-
-### Docker Compose support
-
-JHipster generates a number of Docker Compose configuration files in the [src/main/docker/](src/main/docker/) folder to launch required third party services.
-
-For example, to start required services in Docker containers, run:
-
-```bash
-docker compose -f src/main/docker/services.yml up -d
-```
-
-To stop and remove the containers, run:
-
-```bash
-docker compose -f src/main/docker/services.yml down
-```
-
-[Spring Docker Compose Integration](https://docs.spring.io/spring-boot/reference/features/dev-services.html) is enabled by default. It's possible to disable it in `application.yml`:
-
-```yaml
-spring:
-  ...
-  docker:
-    compose:
-      enabled: false
-```
-
-You can also fully dockerize your application and all the services that it depends on.
-To achieve this, first build a Docker image of your app by running:
-
-```bash
-npm run java:docker
-```
-
-Or build an arm64 Docker image when using an arm64 processor OS, i.e., Apple Silicon chips (M\*), running:
-
-```bash
-npm run java:docker:arm64
-```
-
-Then run:
-
-```bash
-docker compose -f src/main/docker/app.yml up -d
-```
-
-For more information refer to [Docker and Docker-Compose](https://www.jhipster.tech/documentation-archive/v9.0.0/docker-compose/), this page also contains information on the Docker Compose sub-generator (`jhipster docker-compose`), which is able to generate Docker configurations for one or several JHipster applications.
-
-## Continuous Integration (optional)
-
-To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration](https://www.jhipster.tech/documentation-archive/v9.0.0/setting-up-ci/) page for more information.
-
-## References
-
-- [JHipster Homepage and latest documentation](https://www.jhipster.tech/)
-- [JHipster 9.0.0 archive](https://www.jhipster.tech/documentation-archive/v9.0.0)
-- [Using JHipster in development](https://www.jhipster.tech/documentation-archive/v9.0.0/development/)
-- [Using Docker and Docker-Compose](https://www.jhipster.tech/documentation-archive/v9.0.0/docker-compose)
-- [Using JHipster in production](https://www.jhipster.tech/documentation-archive/v9.0.0/production/)
-- [Running tests page](https://www.jhipster.tech/documentation-archive/v9.0.0/running-tests/)
-- [Code quality page](https://www.jhipster.tech/documentation-archive/v9.0.0/code-quality/)
-- [Setting up Continuous Integration](https://www.jhipster.tech/documentation-archive/v9.0.0/setting-up-ci/)
-- [Node.js](https://nodejs.org/)
-- [NPM](https://www.npmjs.com/)
-- [OpenAPI-Generator](https://openapi-generator.tech)
-- [Swagger-Editor](https://editor.swagger.io)
-- [Doing API-First development](https://www.jhipster.tech/documentation-archive/v9.0.0/doing-api-first-development/)
+Built by **Odhrán Daly**: [portfolio](https://www.odhran.ca) · [LinkedIn](https://www.linkedin.com/in/odhrandaly)
